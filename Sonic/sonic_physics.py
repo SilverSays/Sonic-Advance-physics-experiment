@@ -1,6 +1,7 @@
 # res://Sonic/sonic_physics.py
 from godot import Vector2, Input
 import math
+import traceback
 
 class SonicPhysics:
 	def __init__(self, character):
@@ -96,6 +97,11 @@ class SonicPhysics:
 		if gs is None:
 			gs = self._gs_from_velocity(c.velocity, t)
 
+		# FIX(roll-subida): rodando cuesta ARRIBA la pendiente frena menos que lo que acelera cuesta abajo
+		# (como en los Sonic clásicos). Antes el mismo factor 1.15 + roll_friction frenaban de golpe.
+		if getattr(c, "is_rolling", False) and (t.y * gs) < 0.0:
+			sf = float(getattr(c, "slope_roll_up_factor", 0.5))
+
 		# gravedad proyectada a lo largo de la pendiente
 		gs += c.gravity * t.y * sf * delta
 
@@ -124,6 +130,7 @@ class SonicPhysics:
 				except Exception: pass
 
 		c.boost_lock_timer   = max(0.0, c.boost_lock_timer   - delta)
+		c._spring_lift_timer = max(0.0, getattr(c, "_spring_lift_timer", 0.0) - delta)
 		c.hitstun_timer      = max(0.0, c.hitstun_timer      - delta)
 		c.control_lock_timer = max(0.0, c.control_lock_timer - delta)
 
@@ -234,6 +241,11 @@ class SonicPhysics:
 
 		# FIX: la fricción/giro de roll solo aplica con el suelo bajo los pies (antes también en el aire)
 		if c.is_rolling and on_ground_now:
+			# FIX(roll-pendiente): _ground_speed ya trae la gravedad de pendiente del frame anterior
+			# (_apply_adv3_slope_on_ground). Antes roll_speed lo pisaba y se perdía esa ganancia/pérdida.
+			if abs(gs) > 0.1:
+				c.roll_speed = abs(gs)
+				c.roll_dir = c._sign(gs)
 			if input_dir != 0 and input_dir != c.roll_dir:
 				turn_dec = c.roll_turn_resistance * delta
 				if c.roll_speed <= turn_dec:
@@ -258,7 +270,10 @@ class SonicPhysics:
 					c.roll_speed -= dec
 					gs = c.roll_dir * c.roll_speed
 
-			if c.roll_speed < c.roll_min_speed:
+			# FIX(roll-subida): en pendiente no desenrollar al llegar a ~0; la gravedad le da la vuelta
+			# y sigue rodando cuesta abajo. Solo se desenrolla en suelo casi plano.
+			on_slope = abs(t.y) > float(getattr(c, "roll_keep_on_slope", 0.2))
+			if c.roll_speed < c.roll_min_speed and not on_slope:
 				c._stop_roll()
 
 		# NORMAL (en piso caminable)
@@ -287,9 +302,16 @@ class SonicPhysics:
 					else:
 						max_step = accel * delta
 
-					diff = desired_gs - gs
-					if abs(diff) <= max_step: gs = desired_gs
-					else:                     gs += c._sign(diff) * max_step
+					# FIX(sobrevelocidad): si vas en la dirección del input pero MÁS rápido que el objetivo
+					# (aterrizaje, bajada, spindash, boost), antes se recortaba a accel_ground (4200 px/s²) => frenazo seco.
+					# Ahora solo decae suavemente con overspeed_decel.
+					if c._sign(gs) == input_dir and abs(gs) > abs(desired_gs):
+						dec = float(getattr(c, "overspeed_decel", 250.0)) * delta
+						gs -= c._sign(gs) * min(dec, abs(gs) - abs(desired_gs))
+					else:
+						diff = desired_gs - gs
+						if abs(diff) <= max_step: gs = desired_gs
+						else:                     gs += c._sign(diff) * max_step
 				else:
 					# NO frenar si acabas de salir de roll con preserve=True
 					if getattr(c, "roll_exit_preserve_timer", 0.0) <= 0.0:
@@ -314,7 +336,9 @@ class SonicPhysics:
 					 and pressed_jump and not jump_consumed_for_spindash)
 
 		# En piso caminable y NO saltas: aplicar rampa
-		if c.is_on_floor() and getattr(c, "_walkable_floor_flag", True) and not will_jump and c.hitstun_timer <= 0.0:
+		# FIX(resorte-arriba): con _spring_lift_timer activo (resorte vertical) no reconstruir la velocidad desde el suelo
+		if (c.is_on_floor() and getattr(c, "_walkable_floor_flag", True) and not will_jump
+				and c.hitstun_timer <= 0.0 and getattr(c, "_spring_lift_timer", 0.0) <= 0.0):
 			self._apply_adv3_slope_on_ground(delta)
 
 		# EN EL AIRE: momentum + (a) resistencia contra; (b) control mínimo para arrancar desde 0
@@ -337,9 +361,15 @@ class SonicPhysics:
 					c.velocity.x -= c._sign(c.velocity.x) * resist
 			elif input_dir != 0:
 				# (b) control mínimo para empezar a moverte desde casi cero (cap suave)
-				c.velocity.x += input_dir * air_acc * delta
-				if abs(c.velocity.x) > air_cap and c._sign(c.velocity.x) == input_dir and abs(c.velocity.x) < air_cap + 2*air_acc*delta:
-					c.velocity.x = input_dir * air_cap
+				# FIX(aire-acelera): antes el cap solo se aplicaba en una ventana estrecha justo encima de air_cap;
+				# si ya ibas más rápido, cada frame sumaba air_acc hasta air_max_speed (1600).
+				# Ahora el input en el aire nunca empuja por encima de air_cap (pero no recorta el momentum que traías).
+				vx = c.velocity.x
+				if c._sign(vx) != input_dir or abs(vx) < air_cap:
+					vx += input_dir * air_acc * delta
+					if c._sign(vx) == input_dir and abs(vx) > air_cap:
+						vx = input_dir * air_cap
+					c.velocity.x = vx
 
 			# Cap de velocidad aérea (también corta exceso que traías del suelo/spindash)
 			if abs(c.velocity.x) > air_max_spd:
@@ -377,13 +407,18 @@ class SonicPhysics:
 		UP = Vector2(0, -1)
 		use_snap = (c._no_snap_timer <= 0.0 and c.hitstun_timer <= 0.0 and getattr(c, "_walkable_floor_flag", True))
 		up_dir_to_use = n if use_snap else UP
+		# FIX(floor-angle): antes no se pasaba floor_max_angle y Godot usaba 45° por defecto,
+		# así que al aterrizar (up = global) en rampas de 45°-65° is_on_floor() daba False.
+		floor_angle = math.radians(float(getattr(c, "max_walk_slope_deg", 65.0)))
 
 		try:
 			if use_snap:
-				c.move_and_slide_with_snap(c.velocity, -up_dir_to_use * self._snap_length(delta), up_dir_to_use)
+				c.move_and_slide_with_snap(c.velocity, -up_dir_to_use * self._snap_length(delta), up_dir_to_use,
+										   False, 4, floor_angle)
 			else:
-				c.move_and_slide(c.velocity, up_dir_to_use)
+				c.move_and_slide(c.velocity, up_dir_to_use, False, 4, floor_angle)
 		except Exception:
+			traceback.print_exc()
 			c.move_and_slide(c.velocity, up_dir_to_use)
 
 		# -------- Parada seca POR PARED (no por rampa ni wall-run válido) --------

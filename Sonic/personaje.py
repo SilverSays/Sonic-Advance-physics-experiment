@@ -66,11 +66,24 @@ class Personaje(KinematicBody2D):
 	roll_turn_resistance = export(float, default=900.0)
 	roll_exit_preserve_time = export(float, default=0.14)
 
+	# ----- pendientes / roll (antes solo por getattr, ahora visibles en el inspector) -----
+	slope_ground_boost = export(float, default=0.95)    # gravedad en pendiente corriendo
+	slope_roll_boost = export(float, default=1.15)      # gravedad en pendiente rodando cuesta ABAJO
+	slope_roll_up_factor = export(float, default=0.5)   # gravedad en pendiente rodando cuesta ARRIBA
+	roll_keep_on_slope = export(float, default=0.2)     # |t.y| mínimo para no desenrollar al pararse (0.2 ≈ 12°)
+
+	# ----- sobrevelocidad / aire -----
+	overspeed_decel = export(float, default=250.0)      # decaimiento suave si vas más rápido que el objetivo
+	air_ctrl_accel = export(float, default=900.0)
+	air_ctrl_cap = export(float, default=140.0)         # el input en el aire no empuja por encima de esto
+
 	# ----- spindash -----
 	spindash_max_charge = export(int, default=8)
-	spindash_charge_power = export(float, default=140.0)
-	spindash_base_power = export(float, default=220.0)
-	spindash_max_launch = export(float, default=1600.0)
+	# FIX(spindash): antes base 220 + 140/toque => 1 toque = 360 px/s (menos que caminar rápido).
+	# Ahora 1 toque ~ velocidad de carrera; 8 toques = 1800.
+	spindash_charge_power = export(float, default=100.0)
+	spindash_base_power = export(float, default=1000.0)
+	spindash_max_launch = export(float, default=1800.0)
 	spindash_cancel_vel_threshold = export(float, default=6.0)
 
 	# ===== anillos (estallido visual) =====
@@ -460,12 +473,14 @@ class Personaje(KinematicBody2D):
 
 		if keep_as_roll:
 			self.is_rolling = True
-			if hasattr(self, "roll_dir"):
-				self.roll_dir = 1 if dirv.x >= 0 else -1
-			if hasattr(self, "roll_speed"):
-				self.roll_speed = abs(spd)
-			self.velocity.x = (1 if dirv.x >= 0 else -1) * abs(spd)
+			# FIX(resorte-roll): antes velocity.x = ±spd aunque dirv fuera vertical,
+			# así que un resorte hacia arriba rodando lanzaba también a la derecha.
+			if abs(dirv.x) > 0.01:
+				self.roll_dir = 1 if dirv.x > 0 else -1
+			self.roll_speed = abs(dirv.x * spd)
+			self.velocity.x = dirv.x * abs(spd)
 			self.velocity.y = dirv.y * abs(spd)
+			self._ground_speed = self.velocity.x
 			try:
 				if self.anim_player and self.anim_player.current_animation != "roll":
 					self.anim_player.play("roll")
@@ -478,6 +493,14 @@ class Personaje(KinematicBody2D):
 			self.velocity = Vector2(dirv.x * spd, dirv.y * spd)
 			# FIX: sin esto la física del suelo reconstruía la velocidad con el _ground_speed viejo y anulaba el boost
 			self._ground_speed = self.velocity.x
+
+		# FIX(resorte-arriba): si el impulso es mayormente hacia arriba, despegar del suelo.
+		# Sin esto, en el siguiente frame is_on_floor() seguía True y la física de suelo
+		# reconstruía velocity = tangente * _ground_speed (= 0), anulando el salto; además el snap lo volvía a pegar.
+		if dirv.y < -0.7:
+			self._no_snap_timer = max(float(getattr(self, "_no_snap_timer", 0.0)), 0.2)
+			self._was_airborne = True
+			self._spring_lift_timer = 0.1
 
 		if hasattr(self, "run_meter"):
 			self.run_meter = max(self.run_meter, 1.0)
@@ -539,6 +562,9 @@ class Personaje(KinematicBody2D):
 		self.roll_dir = dir_to_use
 		self.roll_speed = abs(launch)
 		self.velocity.x = self.roll_dir * self.roll_speed
+		# FIX(spindash): sin esto _ground_speed seguía ~0 (parado) y FIX(roll-pendiente) podía
+		# sobrescribir roll_speed con ese valor en el mismo frame, matando el lanzamiento.
+		self._ground_speed = self.velocity.x
 		self.is_spindash_charging = False
 		self.spindash_charge = 0
 		self.spindash_charge_anim_timer = 0.0
