@@ -1,0 +1,153 @@
+[gd_scene load_steps=25 format=2]
+
+[ext_resource path="res://suelos/284.tscn" type="PackedScene" id=1]
+[ext_resource path="res://suelos/285.tscn" type="PackedScene" id=2]
+[ext_resource path="res://suelos/2.tscn" type="PackedScene" id=3]
+[ext_resource path="res://suelos/82.tscn" type="PackedScene" id=4]
+[ext_resource path="res://suelos/83.tscn" type="PackedScene" id=5]
+[ext_resource path="res://suelos/84.tscn" type="PackedScene" id=6]
+[ext_resource path="res://suelos/251.tscn" type="PackedScene" id=7]
+[ext_resource path="res://suelos/316.tscn" type="PackedScene" id=8]
+[ext_resource path="res://rings/Area2D.tscn" type="PackedScene" id=9]
+[ext_resource path="res://suelos/343.tscn" type="PackedScene" id=10]
+[ext_resource path="res://enemies/BadnikFlyer.tscn" type="PackedScene" id=11]
+[ext_resource path="res://suelos/342.tscn" type="PackedScene" id=12]
+[ext_resource path="res://suelos/211.tscn" type="PackedScene" id=13]
+[ext_resource path="res://suelos/249.tscn" type="PackedScene" id=14]
+[ext_resource path="res://Sonic/KinematicBody2D.tscn" type="PackedScene" id=15]
+[ext_resource path="res://suelos/212.tscn" type="PackedScene" id=16]
+[ext_resource path="res://background/shz8.png" type="Texture" id=17]
+[ext_resource path="res://background/shz7.png" type="Texture" id=18]
+[ext_resource path="res://background/shz3.png" type="Texture" id=19]
+[ext_resource path="res://background/shz5.png" type="Texture" id=20]
+[ext_resource path="res://background/shz6.png" type="Texture" id=21]
+[ext_resource path="res://Sonic/LoopPath.tscn" type="PackedScene" id=22]
+
+[sub_resource type="SpriteFrames" id=1]
+animations = [ {
+"frames": [ ExtResource( 19 ), ExtResource( 20 ), ExtResource( 21 ), ExtResource( 18 ) ],
+"loop": true,
+"name": "background",
+"speed": 5.0
+} ]
+
+[sub_resource type="PluginScript" id=2]
+
+[node name="Node2D" type="Node2D"]
+
+[node name="ParallaxBackground" type="ParallaxBackground" parent="."]
+
+[node name="ParallaxLayer" type="ParallaxLayer" parent="ParallaxBackground"]
+motion_scale = Vector2( 0, 0 )
+
+[node name="AnimatedSprite" type="AnimatedSprite" parent="ParallaxBackground/ParallaxLayer"]
+position = Vector2( 0, -15 )
+scale = Vector2( 1.6, 1.35103 )
+frames = SubResource( 1 )
+animation = "background"
+playing = true
+
+[node name="ParallaxLayer2" type="ParallaxLayer" parent="ParallaxBackground"]
+motion_scale = Vector2( 0.8, 1 )
+motion_mirroring = Vector2( 383, 0 )
+script = SubResource( 2 )
+
+[node name="Sprite" type="Sprite" parent="ParallaxBackground/ParallaxLayer2"]
+visible = false
+position = Vector2( 0.107159, -82.3 )
+scale = Vector2( 1.28787, 1.833 )
+texture = ExtResource( 17 )
+
+[node name="Area2D" parent="." instance=ExtResource( 9 )]
+position = Vector2( 51, -14 )
+script = null
+
+[node name="Area2D2" parent="." instance=ExtResource( 9 )]
+position = Vector2( 75, -14 )
+script = null
+
+[node name="Area2D3" parent="." instance=ExtResource( 9 )]
+position = Vector2( 99, -14 )
+script = null
+
+[node name="Area2D4" parent="." instance=ExtResource( 9 )]
+position = Vector2( 123, -14 )
+script = null
+
+[node name="BadnikFlyer" parent="." instance=ExtResource( 11 )]
+position = Vector2( -125, -67 )
+script = null
+
+[node name="StaticBody2D" parent="." instance=ExtResource( 1 )]
+position = Vector2( -48, 48 )
+
+[node name="StaticBody2D10" parent="." instance=ExtResource( 1 )]
+position = Vector2( 932, -150 )
+
+[node name="StaticBody2D2" parent="." instance=ExtResource( 2 )]
+position = Vector2( 48, 48 )
+
+[node name="StaticBody2D11" parent="." instance=ExtResource( 2 )]
+position = Vector2( 1028, -150 )
+
+[node name="StaticBody2D4" parent="." instance=ExtResource( 4 )]
+position = Vector2( 238, -48 )
+
+[node name="StaticBody2D9" parent="." instance=ExtResource( 6 )]
+position = Vector2( 430, -48 )
+
+[node name="StaticBody2D5" parent="." instance=ExtResource( 5 )]
+position = Vector2( 334, -48 )
+
+[node name="StaticBody2D3" parent="." instance=ExtResource( 3 )]
+position = Vector2( 144, 47 )
+
+[node name="StaticBody2D15" parent="." instance=ExtResource( 3 )]
+position = Vector2( 1604, 51 )
+
+[node name="StaticBody2D16" parent="." instance=ExtResource( 3 )]
+position = Vector2( 1700, 51 )
+
+[node name="StaticBody2D17" parent="." instance=ExtResource( 3 )]
+position = Vector2( 1796, 51 )
+
+[node name="StaticBody2D19" parent="." instance=ExtResource( 3 )]
+position = Vector2( 1892, 51 )
+
+[node name="StaticBody2D6" parent="." instance=ExtResource( 4 )]
+position = Vector2( 524, -102 )
+
+[node name="StaticBody2D23" parent="." instance=ExtResource( 7 )]
+position = Vector2( 812, -126 )
+
+[node name="StaticBody2D24" parent="." instance=ExtResource( 7 )]
+position = Vector2( 836, -150 )
+
+[node name="StaticBody2D8" parent="." instance=ExtResource( 8 )]
+position = Vector2( 716, -54 )
+
+[node name="StaticBody2D7" parent="." instance=ExtResource( 5 )]
+position = Vector2( 620, -102 )
+
+[node name="StaticBody2D12" parent="." instance=ExtResource( 12 )]
+position = Vector2( 1124, -150 )
+
+[node name="StaticBody2D13" parent="." instance=ExtResource( 10 )]
+position = Vector2( 1220, -150 )
+
+[node name="StaticBody2D22" parent="." instance=ExtResource( 16 )]
+position = Vector2( 1508, 4 )
+
+[node name="StaticBody2D21" parent="." instance=ExtResource( 13 )]
+position = Vector2( 1412, 4 )
+
+[node name="StaticBody2D14" parent="." instance=ExtResource( 14 )]
+position = Vector2( 1316, -86 )
+
+[node name="LoopPath" parent="." instance=ExtResource( 22 )]
+position = Vector2( 1759, -5 )
+
+[node name="KinematicBody2D" parent="." instance=ExtResource( 15 )]
+position = Vector2( 0, -16 )
+collision_mask = 13
+script = null

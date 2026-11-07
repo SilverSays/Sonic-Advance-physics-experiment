@@ -1,0 +1,9 @@
+# Godot 3: se regeneran al abrir el proyecto
+.import/
+
+# Caché de Python
+__pycache__/
+*.pyc
+
+# Respaldos locales
+_backup_*/
