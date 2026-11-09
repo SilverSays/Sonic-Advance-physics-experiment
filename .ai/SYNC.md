@@ -45,6 +45,18 @@ Hasta que Silv lo active, cada agente trabaja según `CLAUDE.md`.
 
 ---
 
+## Recordatorios para Silv
+
+Cualquier agente: recuérdale esto a Silv cuando se empiece la reorganización de carpetas
+(o antes, si la conversación llega a ese tema).
+
+- Decidir qué hacer con las **55 escenas de `suelos/` que el nivel no usa**: dejarlas para
+  niveles futuros o archivarlas.
+- Decidir qué hacer con los **3 duplicados** (`31`, `34`, `44`): borrarlos o dejarlos como variantes.
+  Detalle en `docs/tiles/suelos.md`.
+
+---
+
 ## Estado de los scripts de Python
 
 Estado al 2026-11-08. "Verificado" significa probado jugando por Silv.

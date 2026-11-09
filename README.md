@@ -19,6 +19,30 @@ Se usa como apoyo la versión en Markdown del repo
 Es una conversión automática: si una fórmula se ve rara, hay que compararla
 con la wiki original.
 
+### Por qué
+
+- **El sistema viejo se arreglaba a parches.** Cada bug se corregía con un ajuste
+  propio (snap variable, topes, sincronizar `_ground_speed` en varios lugares), y
+  esos arreglos chocaban entre sí. La SPG describe un modelo completo y probado
+  durante décadas: en vez de inventar la física, se replica una que ya funciona.
+- **Números comparables.** Usar las mismas unidades que la guía (px/frame) deja
+  comparar cada constante 1:1 y documentar cada ajuste hacia Advance como un cambio
+  sobre un valor conocido.
+- **Aprender la guía.** Implementarla paso a paso es la forma de entender por qué
+  Sonic se siente como se siente.
+- **El reto de rendimiento.** Los sensores por raycast de la guía obligan a hacer
+  muchas llamadas a Godot desde Python cada frame. Eso es justo lo que se quiere medir
+  y optimizar, y solo tiene sentido medirlo desde el principio.
+
+### En qué va (2026-11-08)
+
+1. Medición instalada (`Sonic/perf.py`). Falta correr la baseline con el sistema viejo.
+2. Fase A1 escrita (`Sonic/sonic_physics_spg.py`: suelo plano). Falta revisarla y probarla.
+3. Después de la baseline, el módulo nuevo reemplaza al viejo y se compara el rendimiento.
+
+El trabajo está en la rama `feat/fisica-spg`. `fix/fisica-sonic` conserva el último
+estado del sistema viejo.
+
 - **Base:** los valores y el orden de operaciones de los Sonic de Genesis (SPG).
 - **Destino:** la sensación de Sonic Advance (aceleración más directa, más control
   en el aire, menos castigo en secciones rápidas). Los cambios hacia Advance se
