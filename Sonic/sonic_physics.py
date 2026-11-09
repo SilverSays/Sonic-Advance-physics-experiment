@@ -411,6 +411,8 @@ class SonicPhysics:
 		# así que al aterrizar (up = global) en rampas de 45°-65° is_on_floor() daba False.
 		floor_angle = math.radians(float(getattr(c, "max_walk_slope_deg", 65.0)))
 
+		perf = getattr(c, "_perf", None)
+		if perf: perf.engine_begin()
 		try:
 			if use_snap:
 				c.move_and_slide_with_snap(c.velocity, -up_dir_to_use * self._snap_length(delta), up_dir_to_use,
@@ -420,6 +422,7 @@ class SonicPhysics:
 		except Exception:
 			traceback.print_exc()
 			c.move_and_slide(c.velocity, up_dir_to_use)
+		if perf: perf.engine_end()
 
 		# -------- Parada seca POR PARED (no por rampa ni wall-run válido) --------
 		try:

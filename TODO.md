@@ -1,26 +1,77 @@
 # Pendientes
 
-## Por probar (cambios ya aplicados)
-- [-] Aterrizaje sin perder velocidad (_ground_speed sincronizada)
-- [x] Pegarse al suelo en bajadas con baches (snap por velocidad)
-- [x] Techo corta la subida
-- [ ] Panel de boost funciona en el suelo
-- [ ] Salida del loop conserva velocidad
-- [-] A. Rodar en pendientes gana/pierde velocidad (roll_speed se sincroniza con _ground_speed) — `FIX(roll-pendiente)`
-- [-] B. Aterrizar en rampas de 45°–65° cuenta como suelo (floor_max_angle = max_walk_slope_deg) — `FIX(floor-angle)`
-- [ ] C1. Resorte hacia arriba funciona estando en el suelo — `FIX(resorte-arriba)`
-- [ ] C2. Resorte hacia arriba rodando ya no lanza hacia la derecha — `FIX(resorte-roll)`
-- [ ] D. En el aire el input ya no acelera por encima de air_ctrl_cap — `FIX(aire-acelera)`
-- [ ] E. Aterrizar/ir más rápido que el objetivo decae suave (overspeed_decel) en vez de frenazo — `FIX(sobrevelocidad)`
-- [ ] F. Rodar cuesta arriba frena menos (slope_roll_up_factor) y en pendiente sigue rodando hacia abajo — `FIX(roll-subida)`
-- [ ] G. Spindash más potente (1100–1800) y ya no se anula al soltar — `FIX(spindash)`
+Leyenda: `[ ]` por hacer · `[x]` hecho y verificado jugando · `[-]` hecho, sin verificar jugando
+o con resultado parcial · `[~]` obsoleto por la migración.
+
+## Fases de la migración a la SPG
+
+### Fase 0 — Medición base
+- [-] Medir `SonicPhysics.step()` con el sistema viejo (`Sonic/perf.py`, ya instalado).
+      Correr, frenar y saltar unos 20–30 s y guardar las líneas `[perf]` en `.ai/SYNC.md`.
+
+### Fase A — Modelo de velocidad SPG (se mantiene KinematicBody2D)
+- [ ] A1. Suelo plano: aceleración, desaceleración (con el quirk de 0.5), fricción y tope (versión S2+).
+      - [-] Módulo escrito: `Sonic/sonic_physics_spg.py`. Falta que Silv lo revise.
+      - [ ] Tras la baseline: mover el viejo a `Sonic/legacy/sonic_physics_legacy.py` y
+            renombrar el nuevo a `Sonic/sonic_physics.py`.
+      - [ ] Probar jugando. Medir con `[perf]` y comparar con la baseline.
+      - [ ] Ver si la regla de pared nueva resuelve "pared de frente en suelo caminable no frena".
+- [ ] A2. Salto y aire: fuerza de salto, salto variable, aceleración aérea, air drag, gravedad
+      después de mover, tope de caída.
+      Ojo: en el Markdown de la SPG, la fórmula del air drag (`floor(X Speed >> 2) / 256`)
+      parece mal convertida. Compararla con la wiki.
+- [ ] A3. Roll y spindash (fricción y deceleración del roll, spinrev y su decaimiento).
+- [ ] A4. Pendientes: slope factor, aterrizaje según ángulo, resbalar o caerse con poca
+      velocidad, control lock.
+- [ ] A5. Ajustes hacia Sonic Advance, uno por uno y probados por separado:
+      aceleración más directa, más control en el aire, flujo menos castigador a alta velocidad.
+      Por ahora son descripciones cualitativas (de haber jugado). Si hacen falta números,
+      medir Advance en un emulador con avance cuadro a cuadro.
+
+### Fase B — Sensores por raycast
+- [ ] Sensores A/B (suelo), C/D (techo), E/F (empuje) según `docs/06-slope-collision.md` de la SPG.
+- [ ] Medir el costo de los raycasts desde Python (cada llamada cruza la frontera Python↔Godot).
+- [ ] Revisar si hace falta subir de 60 Hz para no atravesar paredes a alta velocidad.
+      Hacerlo implica reescalar todas las constantes.
+
+### Reimplementar sobre el sistema nuevo
+- [ ] Animaciones completas (ver `docs/animaciones-legacy.md`), con la duración de cuadro
+      variable de la guía.
+- [ ] Mirar arriba y abajo, agacharse (con hitbox real).
+- [ ] Daño, knockback, invulnerabilidad, anillos soltados, muerte y respawn.
+- [ ] Regla de unidades: que todos los que escriben `velocity` usen
+      `set_ground_speed()` o `set_air_speed()`:
+      - [ ] `personaje.py`: `external_boost`, `_start_hit_reaction`, `_start_death`,
+            `_respawn`, `_release_spindash`, `_stop_roll`, `detach_path_driver`.
+      - [ ] `Sonic/loop_path.py`.
+      - [ ] Los 4 resortes y `items/DashPanel/DashPanel.py`: llaman a `external_boost` (px/s)
+            y, si no existe, escriben `velocity` del jugador directamente.
+      - (`badnik_bullet.py` usa su propia `velocity`, no la del jugador: no aplica.)
+- [ ] Exports en px/frame para ajustar las constantes desde el inspector. Los exports
+      viejos están en px/s y ya no los usa el módulo nuevo.
+
+## Organización del proyecto (propuesta, sin aplicar)
+- [ ] Decidir la estructura nueva. Propuesta en `.ai/SYNC.md`, sección "Propuesta de reorganización".
+- [ ] Mover desde el FileSystem del editor de Godot (actualiza las referencias en `.tscn`),
+      no desde el explorador de Windows.
+- [ ] Después de mover, corregir a mano lo que Godot no actualiza: imports de Python
+      (`from Sonic.sonic_physics ...`) y strings `"res://..."` dentro de los `.py`.
+- [ ] Renombrar las piezas de suelo por forma (plano, pendiente, etc.) en vez de por número.
+      Hoja y tabla con nombres propuestos en `docs/tiles/suelos.md`. Corregir antes las escenas
+      que usan el PNG equivocado (14↔15, 284↔286, 152→156, 249→294) y los duplicados (31, 34, 44).
+- [ ] Decidir qué hacer con los ~634 PNG de `Sprites/sunset hill/` que ninguna escena usa
+      (704 en total, 70 en uso).
 
 ## Bugs conocidos
-- [ ] Pared de frente en suelo caminable no frena
-      Hipótesis: `sonic_physics.py`, bloque "Parada seca POR PARED": el `continue` cuando
-      is_on_floor() y suelo caminable se salta toda detección de pared.
-- [ ] Hitbox de crouch no se reduce (la cápsula no tiene extents)
-- [ ] `script = null` en la instancia del jugador en `items/checkpoint/Node2D.tscn`
+- [ ] `items/DroppedRing.tscn` apunta a `res://rings/__pycache__/ring_idle.tres`, que no existe.
+      `__pycache__/` está en `.gitignore`, así que tampoco está en el repo.
+      Hipótesis: los anillos soltados al recibir daño no cargan su animación o fallan al instanciarse.
+- [ ] El sistema viejo pedía una animación `"crouch"` que no existe en el AnimationPlayer.
+- [ ] Pared de frente en suelo caminable no frena (sistema viejo).
+      Hipótesis: `sonic_physics.py` viejo, bloque "Parada seca POR PARED": el `continue`
+      cuando is_on_floor() y suelo caminable se salta toda detección de pared.
+- [ ] Hitbox de crouch no se reduce (la cápsula no tiene extents).
+- [ ] `script = null` en la instancia del jugador en `items/checkpoint/Node2D.tscn`.
       Hipótesis: ese override quita personaje.py en la escena principal (suele pasar si el
       editor guardó sin cargar el plugin de Python). Revisar en el inspector del nodo.
       Lo mismo con el PluginScript vacío en ParallaxLayer2.
@@ -29,19 +80,30 @@
 - [ ] Morir dentro de un loop: el driver tiene prioridad y `_death_tick` nunca corre.
 - [ ] LoopPath recorre todo el árbol cada frame buscando al jugador: `player_name_hint` es
       "Personaje" pero el nodo se llama KinematicBody2D y no está en el grupo "Player".
+- [ ] Mayúsculas inconsistentes: la carpeta es `Sonic/` pero `rings/Area2D.py` dice
+      `res://sonic/ring.py` en su comentario. En Windows no importa, pero en un export (PCK)
+      las rutas distinguen mayúsculas.
 
 ## Deuda técnica
-- [ ] `except Exception: pass` por todas partes oculta errores; el import de SonicPhysics
-      falla en silencio (Sonic cae sin control y sin mensaje).
-- [ ] ~15 parámetros leídos con getattr() no están exportados (max_walk_slope_deg, wall_run_*,
-      floor_snap_*, slope_*_boost, air_*): no se pueden ajustar en el inspector.
-- [ ] Exports sin uso: accel_air, brake, friction, slope_influence, static_friction_threshold,
-      sprint*_min_time; sprint1_timer/sprint2_timer nunca aumentan.
-- [ ] Estado no inicializado en _ready: _ground_speed, _was_airborne, surface_up_dir, _no_snap_timer.
+- [ ] `except Exception: pass` por todas partes oculta errores (el módulo nuevo ya no lo usa).
+- [ ] Comentarios de cabecera con rutas viejas: `checkpoint.py` dice `res://objects/Checkpoint.py`,
+      `DashPanel.py` dice `res://objects/DashPanel.py`, `rings/Area2D.py` dice `res://sonic/ring.py`.
+- [ ] Estado no inicializado en _ready: _ground_speed, _was_airborne, surface_up_dir, _no_snap_timer
+      (deja de importar cuando se retire el sistema viejo).
 - [ ] 4 scripts de resorte casi idénticos → una clase Spring con dirección exportada.
-- [ ] SonicPhysics.step() (~440 líneas) → dividir en métodos.
-- [ ] Borrar surface_physics.py (sin uso).
-- [ ] .gitattributes para que los .import no salgan modificados por LF/CRLF.
+- [ ] Borrar `Sonic/surface_physics.py` (sin uso).
+- [ ] `.gitattributes` para que los `.import` no salgan modificados por LF/CRLF.
+- [ ] Borrar `.git/stale-index-lock-claude` (lock que quedó de una sesión de Claude).
 
 ## Sin revisar
-- [ ] Niveles (suelos/), colisiones de badnik_bullet con el propio badnik
+- [ ] Niveles (suelos/), colisiones de badnik_bullet con el propio badnik.
+- [ ] `Area2D.tscn` en la raíz es la escena del checkpoint, pero el nivel no la instancia.
+      ¿Hay checkpoints en el nivel?
+
+## Archivado: cambios del sistema viejo sin probar (obsoletos por la migración)
+- [~] Aterrizaje sin perder velocidad · panel de boost en el suelo · salida del loop conserva
+      velocidad · A. roll en pendientes · B. floor-angle · C1/C2 resortes · D. aire-acelera ·
+      E. sobrevelocidad · F. roll-subida · G. spindash.
+      Siguen en el historial (commit `22e4b49`). Sirven de referencia de síntomas para las fases A2–A4.
+- [x] Pegarse al suelo en bajadas con baches (snap por velocidad) — sistema viejo.
+- [x] Techo corta la subida — sistema viejo.

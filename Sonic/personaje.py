@@ -7,11 +7,23 @@ try:
 except Exception:
 	SonicPhysics = None
 
+# Medición de rendimiento de step() (ver Sonic/perf.py)
+try:
+	from Sonic.perf import StepProfiler
+except Exception:
+	import traceback
+	traceback.print_exc()
+	StepProfiler = None
+
 
 @exposed
 class Personaje(KinematicBody2D):
 	# --- boost/panel ---
 	boost_lock_default = export(float, default=0.28)
+
+	# --- medición de rendimiento (Sonic/perf.py) ---
+	perf_enabled = export(bool, default=True)
+	perf_window = export(int, default=120)   # frames por cada línea impresa
 
 	# ----- velocidades -----
 	walk_speed = export(float, default=140.0)
@@ -275,6 +287,7 @@ class Personaje(KinematicBody2D):
 
 		# módulo de físicas separado (opcional)
 		self.physics = SonicPhysics(self) if SonicPhysics else None
+		self._perf = StepProfiler(self.perf_window, "SonicPhysics.step") if (StepProfiler and self.perf_enabled) else None
 
 		# ====== NUEVO: driver externo (LoopPath / rail, etc.) ======
 		self._external_driver = None  # si no es None, delegamos el movimiento a ese driver
@@ -786,7 +799,15 @@ class Personaje(KinematicBody2D):
 
 		# Si usas el módulo externo de físicas:
 		if self.physics:
-			self.physics.step(delta)
+			perf = self._perf
+			if perf:
+				perf.begin()
+				try:
+					self.physics.step(delta)
+				finally:
+					perf.end()
+			else:
+				self.physics.step(delta)
 			return
 
 		# (Fallback muy simple si no hay módulo externo)
