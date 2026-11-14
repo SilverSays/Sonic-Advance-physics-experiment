@@ -1,111 +1,110 @@
 # Sonic Advance - Physics Experiment
 
-Fangame 2D de Sonic con físicas estilo **Sonic Advance**, hecho en Godot 3 con
-**Python** en lugar de GDScript.
+A 2D Sonic fangame with **Sonic Advance**-style physics, made in Godot 3 with
+**Python** instead of GDScript.
 
-Además del juego, es un reto personal: **ver hasta dónde se puede llevar Python
-en un juego de plataformas rápido**, y cuánto se puede optimizar, a medida que se
-añaden enemigos, objetos interactivos y coleccionables.
+Besides the game itself, it's a personal challenge: **seeing how far Python can go
+in a fast platformer**, and how much it can be optimized as enemies, interactive
+objects and collectibles get added.
 
-> **Estado:** prototipo. Las físicas se están reescribiendo desde cero.
+> **Status:** prototype. The physics are being rewritten from scratch.
 >
-> - `main` tiene el sistema de físicas **viejo**, jugable pero con errores conocidos.
-> - El trabajo nuevo está en la rama **`feat/fisica-spg`**. Ahí también están el plan
->   detallado (`TODO.md`), la documentación (`docs/`) y las notas de trabajo (`.ai/SYNC.md`).
-> - Se fusiona a `main` cada vez que una fase funciona jugando.
+> - `main` has the **old** physics system: playable, but with known bugs.
+> - The new work lives in the **`feat/fisica-spg`** branch. That's also where the detailed
+>   plan (`TODO.md`), the docs (`docs/`) and the working notes (`.ai/SYNC.md`) are.
+> - It gets merged into `main` every time a phase works in actual gameplay.
 
-## Rumbo del proyecto
+## Where the project is going
 
-Las físicas se están reescribiendo siguiendo la
-[Sonic Physics Guide](https://info.sonicretro.org/Sonic_Physics_Guide) (SPG), el
-documento de referencia sobre cómo funcionan los Sonic clásicos por dentro. Se usa
-como apoyo la versión en Markdown del repo
-[trentbrew/sonic-physics-guide](https://github.com/trentbrew/sonic-physics-guide).
-Es una conversión automática: si una fórmula se ve rara, se compara con la wiki original.
+The physics are being rewritten following the
+[Sonic Physics Guide](https://info.sonicretro.org/Sonic_Physics_Guide) (SPG), the
+reference document on how the classic Sonic games work under the hood. The Markdown
+version from [trentbrew/sonic-physics-guide](https://github.com/trentbrew/sonic-physics-guide)
+is used as support. It's an automatic conversion, so if a formula looks off, it gets checked against the original wiki.
 
-- **Base:** los valores y el orden de operaciones de los Sonic de Genesis.
-- **Destino:** la sensación de Sonic Advance (aceleración más directa, más control
-  en el aire, menos castigo en secciones rápidas). Los cambios hacia Advance se hacen
-  uno por uno sobre la base de la guía, y se prueba cada uno por separado.
+- **Base:** the values and order of operations of the Genesis Sonic games.
+- **Target:** the feel of Sonic Advance (snappier acceleration, more air control,
+  less punishment in fast sections). Changes toward Advance are made one at a time
+  on top of the guide's base, and each one is tested on its own.
 
-### Por qué
+### Why
 
-- **El sistema viejo se arreglaba a parches.** Cada bug se corregía con un ajuste
-  propio (snap variable, topes, sincronizar la velocidad en varios lugares), y esos
-  arreglos chocaban entre sí. La SPG describe un modelo completo, probado durante
-  décadas: en vez de inventar la física, se replica una que ya funciona.
-- **Números comparables.** Usar las mismas unidades que la guía (píxeles por frame a
-  60 Hz) deja comparar cada constante 1:1 con ella, y documentar cada ajuste hacia
-  Advance como un cambio sobre un valor conocido.
-- **Aprender la guía.** Implementarla paso a paso es la forma de entender por qué
-  Sonic se siente como se siente.
-- **El reto de rendimiento.** Los sensores por raycast de la guía obligan a hacer
-  muchas llamadas a Godot desde Python cada frame. Eso es justo lo que se quiere medir
-  y optimizar, y por eso se mide desde el primer día.
+- **The old system was fixed with patches.** Every bug got its own tweak
+  (variable snap, caps, syncing the speed in several places), and those fixes
+  clashed with each other. The SPG describes a complete model, proven over
+  decades: instead of inventing the physics, I replicate one that already works.
+- **Comparable numbers.** Using the same units as the guide (pixels per frame at
+  60 Hz) makes it possible to compare every constant 1:1 with it, and to document every
+  tweak toward Advance as a change from a known value.
+- **Learning the guide.** Implementing it step by step is the way to understand why
+  Sonic feels the way he does.
+- **The performance challenge.** The guide's raycast sensors require many calls
+  into Godot from Python every frame. That's exactly what I want to measure and
+  optimize, which is why it's measured from day one.
 
 ## Roadmap
 
-| Fase | Qué incluye | Estado |
+| Phase | What it covers | Status |
 |---|---|---|
-| **0. Medición base** | Medir cuánto cuesta por frame la física vieja (parte Python y parte motor) | Instalada, falta correrla |
-| **A1. Suelo plano** | Aceleración, desaceleración, fricción y velocidad tope de la SPG | Escrita, sin probar |
-| **A2. Salto y aire** | Salto variable, control y resistencia en el aire, gravedad | Por hacer |
-| **A3. Roll y spindash** | Fricción del roll, carga y lanzamiento del spindash | Por hacer |
-| **A4. Pendientes** | La pendiente acelera y frena, aterrizaje según ángulo, resbalar en paredes | Por hacer |
-| **A5. Hacia Advance** | Ajustes uno por uno para la sensación de Sonic Advance | Por hacer |
-| **B. Sensores** | Cambiar la colisión de Godot por sensores raycast como los de la guía | Por hacer |
-| **Reimplementar** | Animaciones completas, daño y muerte, resortes, paneles, loops, mirar arriba y abajo | Por hacer |
-| **Juego** | Más enemigos, objetos, coleccionables y niveles, midiendo el rendimiento en cada paso | Futuro |
+| **0. Baseline measurement** | Measure the per-frame cost of the old physics (Python side and engine side) | Set up, not run yet |
+| **A1. Flat ground** | SPG acceleration, deceleration, friction and top speed | Written, untested |
+| **A2. Jump and air** | Variable jump, air control and drag, gravity | To do |
+| **A3. Roll and spindash** | Roll friction, spindash charge and release | To do |
+| **A4. Slopes** | Slopes speed you up and slow you down, angle-based landing, sliding off walls | To do |
+| **A5. Toward Advance** | One-by-one tweaks for the Sonic Advance feel | To do |
+| **B. Sensors** | Replace Godot's collision with raycast sensors like the guide's | To do |
+| **Reimplement** | Full animations, damage and death, springs, boost panels, loops, looking up and down | To do |
+| **Game** | More enemies, objects, collectibles and levels, measuring performance at every step | Future |
 
-Durante la fase A se mantiene la colisión de Godot (`KinematicBody2D`) mientras se
-reescribe el modelo de velocidad. Así, si algo se siente mal, se sabe que la causa es
-la velocidad y no la colisión. Los sensores llegan en la fase B.
+During phase A, Godot's collision (`KinematicBody2D`) stays in place while the
+speed model is rewritten. That way, if something feels wrong, the cause is the
+speed and not the collision. Sensors come in phase B.
 
-Hay también una reorganización de carpetas y nombres pendiente, para cuando la fase A
-esté estable.
+There's also a pending reorganization of folders and names, for when phase A is
+stable.
 
-### Regla de unidades
+### Units rule
 
-La velocidad de Sonic (en px/frame) vive **solo** en el módulo de física. Todo lo
-demás (resortes, paneles, loops, daño) la cambia a través de él, nunca escribiendo
-`velocity` directamente. Es la causa de varios bugs del sistema viejo: había varios
-lugares guardando "la velocidad" y se desincronizaban.
+Sonic's speed (in px/frame) lives **only** in the physics module. Everything
+else (springs, boost panels, loops, damage) changes it through that module, never by writing
+`velocity` directly. This caused several bugs in the old system: several places
+were storing "the speed" and they drifted out of sync.
 
-## Tecnologías
+## Tech
 
 - **Godot 3.6.1**
-- **godot-python** (PythonScript 0.50, Python 3.8), incluido en `addons/pythonscript/`
-- Windows. Los `.py` y `.tscn` usan tabuladores.
+- **godot-python** (PythonScript 0.50, Python 3.8), bundled in `addons/pythonscript/`
+- Windows. The `.py` and `.tscn` files use tabs.
 
-## Ejecutar el proyecto
+## Running the project
 
-1. Instala Godot 3.6.1. Godot 4 no sirve.
-2. Clona este repositorio. Para el trabajo nuevo: `git switch feat/fisica-spg`.
-3. Abre la carpeta del proyecto desde el editor de Godot.
-4. Ejecuta la escena principal con **Play**.
+1. Install Godot 3.6.1. Godot 4 won't work.
+2. Clone this repository. For the new work: `git switch feat/fisica-spg`.
+3. Open the project folder from the Godot editor.
+4. Run the main scene with **Play**.
 
-La escena principal es `items/checkpoint/Node2D.tscn` (el nivel de prueba). En la
-rama nueva, las líneas `[perf]` de la consola muestran el costo por frame de la física.
+The main scene is `items/checkpoint/Node2D.tscn` (the test level). On the new
+branch, the `[perf]` lines in the console show the per-frame cost of the physics.
 
-## Controles
+## Controls
 
-- **Flecha izquierda / derecha:** moverse.
-- **Flecha abajo:** agacharse, rodar o preparar el spindash.
-- **Espacio:** saltar o cargar el spindash.
+- **Left / right arrow:** move.
+- **Down arrow:** crouch, roll or get ready to spindash.
+- **Space:** jump or charge the spindash.
 
-En la rama `feat/fisica-spg`, durante la fase A1, solo funciona el movimiento horizontal.
-Lo demás está desactivado a propósito hasta su fase.
+On the `feat/fisica-spg` branch, during phase A1, only horizontal movement works.
+Everything else is disabled on purpose until its phase.
 
-## Estructura principal
+## Main structure
 
 ```text
-Sonic/       Jugador: personaje.py, módulo de física, loops.
-items/       Checkpoint, resortes, panel de impulso, anillo soltado.
-             (items/checkpoint/Node2D.tscn es el nivel de prueba).
-rings/       Anillo coleccionable.
-enemies/     Enemigo volador y su proyectil.
-suelos/      Piezas de suelo (StaticBody2D con un tile de Sunset Hill).
-Sprites/     Gráficos.
-background/  Fondos de Sunset Hill.
-addons/      Runtime de Python para Godot (no tocar).
+Sonic/       Player: personaje.py, physics module, loops.
+items/       Checkpoint, springs, boost panel, dropped ring.
+             (items/checkpoint/Node2D.tscn is the test level).
+rings/       Collectible ring.
+enemies/     Flying enemy and its projectile.
+suelos/      Ground pieces (StaticBody2D with a Sunset Hill tile).
+Sprites/     Graphics.
+background/  Sunset Hill backgrounds.
+addons/      Python runtime for Godot (don't touch).
 ```
