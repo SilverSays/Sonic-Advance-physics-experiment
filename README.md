@@ -11,7 +11,7 @@ objects and collectibles get added.
 >
 > - `main` has the **old** physics system: playable, but with known bugs.
 > - The new work lives in the **`feat/fisica-spg`** branch. That's also where the detailed
->   plan (`TODO.md`), the docs (`docs/`) and the working notes (`.ai/SYNC.md`) are.
+>   plan (`TODO.md`), the docs (`docs/`) and a log for each phase (`docs/fases/`) are.
 > - It gets merged into `main` every time a phase works in actual gameplay.
 
 ## Where the project is going
@@ -42,13 +42,26 @@ is used as support. It's an automatic conversion, so if a formula looks off, it 
   into Godot from Python every frame. That's exactly what I want to measure and
   optimize, which is why it's measured from day one.
 
+## Use of AI
+
+This project is developed with the support of an AI (Claude, by Anthropic) as a
+**learning companion**. It is not a "vibe-coded" project:
+
+- I decide the direction, the phases and what gets changed.
+- The AI explains the Sonic Physics Guide, audits the code, points out problems and
+  their causes, and writes parts of the code when I ask it to.
+- I review every change and test it in gameplay before calling it done. Anything not
+  tested yet is marked as a hypothesis.
+- Every phase is documented (what was done, why, and how it was verified) in
+  `docs/fases/` on the `feat/fisica-spg` branch.
+
 ## Roadmap
 
 | Phase | What it covers | Status |
 |---|---|---|
-| **0. Baseline measurement** | Measure the per-frame cost of the old physics (Python side and engine side) | Set up, not run yet |
-| **A1. Flat ground** | SPG acceleration, deceleration, friction and top speed | Written, untested |
-| **A2. Jump and air** | Variable jump, air control and drag, gravity | To do |
+| **0. Baseline measurement** | Measure the per-frame cost of the old physics (Python side and engine side) | Done |
+| **A1. Flat ground** | SPG acceleration, deceleration, friction and top speed | Done, verified in gameplay |
+| **A2. Jump and air** | Variable jump, air control and drag, gravity | Done, verified in gameplay |
 | **A3. Roll and spindash** | Roll friction, spindash charge and release | To do |
 | **A4. Slopes** | Slopes speed you up and slow you down, angle-based landing, sliding off walls | To do |
 | **A5. Toward Advance** | One-by-one tweaks for the Sonic Advance feel | To do |
@@ -92,7 +105,7 @@ branch, the `[perf]` lines in the console show the per-frame cost of the physics
 - **Down arrow:** crouch, roll or get ready to spindash.
 - **Space:** jump or charge the spindash.
 
-On the `feat/fisica-spg` branch, during phase A1, only horizontal movement works.
+On the `feat/fisica-spg` branch, only running and jumping work for now.
 Everything else is disabled on purpose until its phase.
 
 ## Main structure
