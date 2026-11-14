@@ -11,7 +11,7 @@ objects and collectibles get added.
 >
 > - `main` has the **old** physics system: playable, but with known bugs.
 > - The new work lives in the **`feat/fisica-spg`** branch. That's also where the detailed
->   plan (`TODO.md`), the docs (`docs/`) and a log for each phase (`docs/fases/`) are.
+>   plan (`TODO.md`), the docs (`docs/`) and a log for each phase (`docs/phases/`) are.
 > - It gets merged into `main` every time a phase works in actual gameplay.
 
 ## Where the project is going
@@ -53,7 +53,7 @@ This project is developed with the support of an AI (Claude, by Anthropic) as a
 - I review every change and test it in gameplay before calling it done. Anything not
   tested yet is marked as a hypothesis.
 - Every phase is documented (what was done, why, and how it was verified) in
-  `docs/fases/` on the `feat/fisica-spg` branch.
+  `docs/phases/` on the `feat/fisica-spg` branch.
 
 ## Roadmap
 
