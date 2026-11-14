@@ -12,8 +12,10 @@ o con resultado parcial · `[~]` obsoleto por la migración.
 - [ ] A1. Suelo plano: aceleración, desaceleración (con el quirk de 0.5), fricción y tope (versión S2+).
       - [-] Módulo escrito y activado (2026-11-13): `Sonic/sonic_physics.py`. El viejo está en
             `Sonic/legacy/sonic_physics_legacy.py`. Falta que Silv lo revise.
-      - [ ] Probar jugando. Medir con `[perf]` y comparar con la baseline.
-      - [ ] Ver si la regla de pared nueva resuelve "pared de frente en suelo caminable no frena".
+      - [-] Probado jugando (2026-11-13): paredes frenan en seco, animaciones bien, pendientes sin
+            cambio de velocidad (esperado). Falta: opinión de Silv sobre la sensación de aceleración y
+            frenado, y medición con rutina fija.
+      - [x] La regla de pared nueva frena contra paredes (verificado jugando).
 - [ ] A2. Salto y aire: fuerza de salto, salto variable, aceleración aérea, air drag, gravedad
       después de mover, tope de caída.
       Ojo: en el Markdown de la SPG, la fórmula del air drag (`floor(X Speed >> 2) / 256`)
@@ -25,6 +27,9 @@ o con resultado parcial · `[~]` obsoleto por la migración.
       aceleración más directa, más control en el aire, flujo menos castigador a alta velocidad.
       Por ahora son descripciones cualitativas (de haber jugado). Si hacen falta números,
       medir Advance en un emulador con avance cuadro a cuadro.
+
+- [ ] Medir el costo de una sola llamada Python→Godot (por ejemplo `is_on_floor()` o crear un `Vector2`)
+      con un microbenchmark, para separar lógica pura de costo de frontera en `[perf]`.
 
 ### Fase B — Sensores por raycast
 - [ ] Sensores A/B (suelo), C/D (techo), E/F (empuje) según `docs/06-slope-collision.md` de la SPG.
@@ -73,6 +78,11 @@ o con resultado parcial · `[~]` obsoleto por la migración.
       Hipótesis: ese override quita personaje.py en la escena principal (suele pasar si el
       editor guardó sin cargar el plugin de Python). Revisar en el inspector del nodo.
       Lo mismo con el PluginScript vacío en ParallaxLayer2.
+- [ ] Los loops nunca enganchan: `[LoopPath] reject speed: 0.0` aunque Sonic vaya corriendo
+      (sistema viejo y nuevo). Hipótesis: `loop_path.py` `_try_attach` lee `body.velocity`, que es atributo
+      de Python y no se ve desde el nodo que obtiene LoopPath; la excepción se traga y `sp = 0.0`.
+      Para verificar: imprimir la excepción en ese `except`. Al arreglarlo, leer la velocidad con la API
+      de física (`get_speed`, px/frame) según la regla de unidades.
 - [ ] Si `LoopPath.drive()` lanza excepción, el jugador queda sin colisión (capas en 0) y
       atraviesa el suelo: el `except` de `Personaje._physics_process` no restaura las capas.
 - [ ] Morir dentro de un loop: el driver tiene prioridad y `_death_tick` nunca corre.

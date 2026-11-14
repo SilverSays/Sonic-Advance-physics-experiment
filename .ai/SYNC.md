@@ -88,6 +88,13 @@ Formato: fecha · módulo · qué se hizo en la prueba · línea(s) `[perf]`.
   Lectura: ~90 % del costo es "python", pero esa etiqueta incluye cada llamada a Godot que no sea
   `move_and_slide` (is_on_floor, Input, anim_player, Vector2...). Todavía no se separa lógica pura de costo de frontera.
   Para comparar con el módulo nuevo: repetir una rutina fija (10 s quieto, 10 s corriendo en plano, 10 s frenando y girando).
+- **2026-11-13 · módulo nuevo, fase A1** · mismas condiciones (editor, debug). Reloj: 0.21 us por par.
+  7 ventanas: total 144–222 us (máx 617) · python 115–189 us · motor 23–35 us · 0.86–1.33 % del frame.
+  Lectura: entre 2 y 3 veces menos que la baseline, pero **no es una comparación justa**: A1 hace mucho
+  menos (sin salto, roll, look, daño ni la mayoría de animaciones). Sirve como punto de partida de A1, no como
+  "el sistema nuevo es más rápido". El "python" sigue siendo ~85 % del total para unas 100 líneas de
+  lógica. *Hipótesis:* lo domina el costo de llamar a Godot (Input, is_on_floor, get_floor_normal,
+  is_on_wall, Vector2, anim_player, sprite). Falta medir cuánto cuesta una sola llamada Python→Godot.
 
 ## Dudas abiertas
 
@@ -164,3 +171,10 @@ Riesgos y cómo hacerlo:
   `sonic_physics.py` viejo → `Sonic/legacy/sonic_physics_legacy.py`; `sonic_physics_spg.py` → `sonic_physics.py`.
   `personaje.py` ahora imprime el error si falla el import de la física. Pendiente: que Silv pruebe A1 jugando.
   Visto en el log: `[LoopPath] reject speed: 0.0 < 220.0` (5 veces); falta saber si Sonic iba rápido.
+- 2026-11-13 · Claude · Silv probó A1 jugando: no gana ni pierde velocidad en pendientes (esperado, aún sin
+  slope factor), se para en seco contra paredes, las animaciones se ven bien y `runmax` nunca aparece.
+  `[LoopPath] reject speed: 0.0` salía también con el sistema viejo **corriendo**. *Hipótesis (leída en el
+  código, sin verificar):* `loop_path.py` lee `body.velocity`, que es un atributo de Python y no una propiedad
+  de Godot; el nodo que encuentra LoopPath no lo expone, así que `body.velocity` lanza una excepción, el
+  `except` la traga y pone `sp = 0.0`. Explicaría por qué los loops nunca enganchan. Se repite muchas veces
+  porque `_process` sondea cada frame dentro de `poll_radius`. Ver TODO.md.
