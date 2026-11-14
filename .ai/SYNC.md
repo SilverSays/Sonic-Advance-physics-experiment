@@ -64,7 +64,7 @@ Estado al 2026-11-13. "Verificado" significa probado jugando por Silv.
 | Script | Estado | Notas |
 |---|---|---|
 | `Sonic/personaje.py` | En uso | Parámetros (exports viejos en px/s), vida y muerte, anillos, boost, driver de loops. Mide `step()` con `perf.py` (exports `perf_enabled`, `perf_window`). Desde 2026-11-13 imprime el error si falla el import de la física (antes fallaba en silencio). Varios métodos escriben `velocity` directamente (ver regla de unidades en README). |
-| `Sonic/sonic_physics.py` | **Activo.** A1 probada jugando; A2 escrita, sin probar | Fases A1 (suelo plano) y A2 (salto y aire) de la SPG, px/frame. Antes se llamaba `sonic_physics_spg.py`. API: `set_ground_speed`, `set_air_speed`, `get_speed`. |
+| `Sonic/sonic_physics.py` | **Activo.** A1 y A2 probadas jugando (2026-11-13) | Fases A1 (suelo plano) y A2 (salto y aire) de la SPG, px/frame. Antes se llamaba `sonic_physics_spg.py`. API: `set_ground_speed`, `set_air_speed`, `get_speed`. |
 | `Sonic/legacy/sonic_physics_legacy.py` | Retirado, no se importa | Sistema viejo (px/s, delta). Referencia para animaciones, look up/down, etc. |
 | `Sonic/perf.py` | En uso, **verificado** (2026-11-13) | `StepProfiler`: total, Python y motor por ventana de N frames. `from godot import OS` funciona. |
 | `Sonic/loop_path.py` | En uso | Loops por Path2D. Escribe `body.velocity` en px/s: incompatible con el módulo nuevo hasta migrarlo. |
@@ -90,6 +90,7 @@ Formato: fecha · módulo · qué se hizo en la prueba · línea(s) `[perf]`.
   Para comparar con el módulo nuevo: repetir una rutina fija (10 s quieto, 10 s corriendo en plano, 10 s frenando y girando).
 - **2026-11-13 · módulo nuevo, fase A1** · mismas condiciones (editor, debug). Reloj: 0.21 us por par.
   7 ventanas: total 144–222 us (máx 617) · python 115–189 us · motor 23–35 us · 0.86–1.33 % del frame.
+  Rutina: solo derecha hasta la pared del final.
   Lectura: entre 2 y 3 veces menos que la baseline, pero **no es una comparación justa**: A1 hace mucho
   menos (sin salto, roll, look, daño ni la mayoría de animaciones). Sirve como punto de partida de A1, no como
   "el sistema nuevo es más rápido". El "python" sigue siendo ~85 % del total para unas 100 líneas de
@@ -184,3 +185,8 @@ Riesgos y cómo hacerlo:
   air drag (`floor(xsp*8)/256` con -4 < ysp < 0, hipótesis), gravedad después de mover, jump delay de 1 frame.
   Cuentas (sin verificar): salto completo ~100 px y 61 frames; soltando enseguida ~39 px y 38 frames.
   Ojo: con 160 px de alto, un salto de 100 px ocupa ~62 % de la pantalla (en Genesis, con 224, ~45 %).
+- 2026-11-13 · Claude · Silv probó A2: el salto "se siente genial", buena movilidad y resistencia en el aire;
+  comparado directamente con Sonic Advance 1, "casi idénticos". Salto corto y largo se distinguen bien.
+  No nota el jump delay. La resolución 240x160 ayuda un poco con la percepción de velocidad, sin ser
+  una diferencia grande. Nota: con valores de Genesis, el aire ya se siente como Advance; la "rigidez en
+  el aire" de Genesis que Silv recordaba quizá no venía de los valores de física.

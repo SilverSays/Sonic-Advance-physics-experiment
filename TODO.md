@@ -16,8 +16,8 @@ o con resultado parcial · `[~]` obsoleto por la migración.
             cambio de velocidad (esperado). Falta: opinión de Silv sobre la sensación de aceleración y
             frenado, y medición con rutina fija.
       - [x] La regla de pared nueva frena contra paredes (verificado jugando).
-- [-] A2. Salto y aire: fuerza de salto, salto variable, aceleración aérea, air drag, gravedad
-      después de mover, tope de caída. Escrita 2026-11-13, sin probar.
+- [x] A2. Salto y aire (2026-11-13). Verificado jugando: se siente casi igual a Sonic Advance 1.
+      Pendiente: confirmar la fórmula del air drag en la wiki y el tope de caída.
       Ojo: en el Markdown de la SPG, la fórmula del air drag (`floor(X Speed >> 2) / 256`)
       parece mal convertida. Compararla con la wiki.
 - [ ] A3. Roll y spindash (fricción y deceleración del roll, spinrev y su decaimiento).
