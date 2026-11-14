@@ -54,6 +54,8 @@ ver hasta dónde llega Python en un juego de plataformas rápido.
 - `Sonic/sonic_physics.py`: sistema **nuevo** (SPG, px/frame), fase A1 activa desde 2026-11-13.
 - `Sonic/legacy/sonic_physics_legacy.py`: sistema viejo (px/s, delta). No se importa; es referencia.
 - `Sonic/perf.py`: `StepProfiler`. Mide total, Python y motor por cada ventana de N frames.
+- `Sonic/bench.py`: microbenchmark Python vs Godot (export `bench_on_start` del jugador).
+- Resolución interna 240x160 (como la GBA), ventana de prueba 960x640.
 - `Sonic/loop_path.py`: loops por Path2D (`attach`/`detach_path_driver`). Todavía en px/s.
 - `Sonic/surface_physics.py`: sin uso.
 - Escena principal (nivel de prueba): `items/checkpoint/Node2D.tscn`.

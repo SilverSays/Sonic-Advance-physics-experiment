@@ -23,14 +23,16 @@ o con resultado parcial · `[~]` obsoleto por la migración.
 - [ ] A3. Roll y spindash (fricción y deceleración del roll, spinrev y su decaimiento).
 - [ ] A4. Pendientes: slope factor, aterrizaje según ángulo, resbalar o caerse con poca
       velocidad, control lock.
+- [x] Resolución interna 240x160 como la GBA (2026-11-13, se queda).
 - [ ] A5. Ajustes hacia Sonic Advance, uno por uno y probados por separado:
       aceleración más directa, más control en el aire, flujo menos castigador a alta velocidad,
       frenado al girar menos brusco (DEC), quitar el jump delay (como Mania).
       Por ahora son descripciones cualitativas (de haber jugado). Si hacen falta números,
       medir Advance en un emulador con avance cuadro a cuadro.
 
-- [ ] Medir el costo de una sola llamada Python→Godot (por ejemplo `is_on_floor()` o crear un `Vector2`)
-      con un microbenchmark, para separar lógica pura de costo de frontera en `[perf]`.
+- [-] Medir el costo de una sola llamada Python→Godot con un microbenchmark (`Sonic/bench.py`,
+      export `bench_on_start`). Escrito 2026-11-13, falta correrlo.
+- [ ] Revisar que nada del nivel ni del HUD dependa de la resolución vieja (384x216).
 
 ### Fase B — Sensores por raycast
 - [ ] Sensores A/B (suelo), C/D (techo), E/F (empuje) según `docs/06-slope-collision.md` de la SPG.

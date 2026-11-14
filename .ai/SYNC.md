@@ -66,6 +66,7 @@ Estado al 2026-11-13. "Verificado" significa probado jugando por Silv.
 | `Sonic/personaje.py` | En uso | Parámetros (exports viejos en px/s), vida y muerte, anillos, boost, driver de loops. Mide `step()` con `perf.py` (exports `perf_enabled`, `perf_window`). Desde 2026-11-13 imprime el error si falla el import de la física (antes fallaba en silencio). Varios métodos escriben `velocity` directamente (ver regla de unidades en README). |
 | `Sonic/sonic_physics.py` | **Activo.** A1 y A2 probadas jugando (2026-11-13) | Fases A1 (suelo plano) y A2 (salto y aire) de la SPG, px/frame. Antes se llamaba `sonic_physics_spg.py`. API: `set_ground_speed`, `set_air_speed`, `get_speed`. |
 | `Sonic/legacy/sonic_physics_legacy.py` | Retirado, no se importa | Sistema viejo (px/s, delta). Referencia para animaciones, look up/down, etc. |
+| `Sonic/bench.py` | Escrito, sin correr | Microbenchmark Python vs Godot (ns por operación). Lo lanza `personaje.py` en el primer frame de física si `bench_on_start` está activado. |
 | `Sonic/perf.py` | En uso, **verificado** (2026-11-13) | `StepProfiler`: total, Python y motor por ventana de N frames. `from godot import OS` funciona. |
 | `Sonic/loop_path.py` | En uso | Loops por Path2D. Escribe `body.velocity` en px/s: incompatible con el módulo nuevo hasta migrarlo. |
 | `Sonic/surface_physics.py` | Sin uso | Intento anterior. Borrar. |
@@ -190,3 +191,4 @@ Riesgos y cómo hacerlo:
   No nota el jump delay. La resolución 240x160 ayuda un poco con la percepción de velocidad, sin ser
   una diferencia grande. Nota: con valores de Genesis, el aire ya se siente como Advance; la "rigidez en
   el aire" de Genesis que Silv recordaba quizá no venía de los valores de física.
+- 2026-11-13 · Claude · Se deja la resolución en 240x160 (decisión de Silv). Escrito `Sonic/bench.py`.

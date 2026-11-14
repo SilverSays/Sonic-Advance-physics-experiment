@@ -18,6 +18,14 @@ except Exception:
 	traceback.print_exc()
 	StepProfiler = None
 
+# Microbenchmark Python vs Godot (ver Sonic/bench.py)
+try:
+	from Sonic.bench import run_bridge_bench
+except Exception:
+	import traceback
+	traceback.print_exc()
+	run_bridge_bench = None
+
 
 @exposed
 class Personaje(KinematicBody2D):
@@ -27,6 +35,7 @@ class Personaje(KinematicBody2D):
 	# --- medición de rendimiento (Sonic/perf.py) ---
 	perf_enabled = export(bool, default=True)
 	perf_window = export(int, default=120)   # frames por cada línea impresa
+	bench_on_start = export(bool, default=True)  # corre Sonic/bench.py una vez al empezar
 
 	# ----- velocidades -----
 	walk_speed = export(float, default=140.0)
@@ -291,6 +300,7 @@ class Personaje(KinematicBody2D):
 		# módulo de físicas separado (opcional)
 		self.physics = SonicPhysics(self) if SonicPhysics else None
 		self._perf = StepProfiler(self.perf_window, "SonicPhysics.step") if (StepProfiler and self.perf_enabled) else None
+		self._bench_pending = bool(self.bench_on_start) and run_bridge_bench is not None
 
 		# ====== NUEVO: driver externo (LoopPath / rail, etc.) ======
 		self._external_driver = None  # si no es None, delegamos el movimiento a ese driver
@@ -792,6 +802,12 @@ class Personaje(KinematicBody2D):
 	#                 BUCLE FÍSICO PRINCIPAL
 	# =========================================================
 	def _physics_process(self, delta):
+		# Microbenchmark: una sola vez, en el primer frame de física (el espacio de física
+		# solo se puede consultar desde aquí).
+		if self._bench_pending:
+			self._bench_pending = False
+			run_bridge_bench(self)
+
 		# Si un driver externo (LoopPath) nos está conduciendo, delega y sal.
 		if getattr(self, "_external_driver", None):
 			try:
