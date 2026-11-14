@@ -59,14 +59,14 @@ Cualquier agente: recuérdale esto a Silv cuando se empiece la reorganización d
 
 ## Estado de los scripts de Python
 
-Estado al 2026-11-08. "Verificado" significa probado jugando por Silv.
+Estado al 2026-11-13. "Verificado" significa probado jugando por Silv.
 
 | Script | Estado | Notas |
 |---|---|---|
-| `Sonic/personaje.py` | En uso | Parámetros (exports viejos en px/s), vida y muerte, anillos, boost, driver de loops. Desde 2026-11-08 mide `step()` con `perf.py` (exports `perf_enabled`, `perf_window`). Varios métodos escriben `velocity` directamente (ver regla de unidades en README). |
-| `Sonic/sonic_physics.py` | En uso, **a retirar** | Sistema viejo (px/s, delta). Tiene un cronómetro alrededor de `move_and_slide` para la baseline. Tras la baseline se mueve a `Sonic/legacy/sonic_physics_legacy.py`. |
-| `Sonic/sonic_physics_spg.py` | Escrito, **sin revisar, sin probar** | Fase A1 de la SPG (suelo plano, px/frame). Reemplazará a `sonic_physics.py`. API: `set_ground_speed`, `set_air_speed`, `get_speed`. |
-| `Sonic/perf.py` | Escrito, sin probar | `StepProfiler`: total, Python y motor por ventana de N frames. Calibra el costo de `OS.get_ticks_usec()` al iniciar. |
+| `Sonic/personaje.py` | En uso | Parámetros (exports viejos en px/s), vida y muerte, anillos, boost, driver de loops. Mide `step()` con `perf.py` (exports `perf_enabled`, `perf_window`). Desde 2026-11-13 imprime el error si falla el import de la física (antes fallaba en silencio). Varios métodos escriben `velocity` directamente (ver regla de unidades en README). |
+| `Sonic/sonic_physics.py` | **Activo desde 2026-11-13, sin probar jugando** | Fase A1 de la SPG (suelo plano, px/frame). Antes se llamaba `sonic_physics_spg.py`. API: `set_ground_speed`, `set_air_speed`, `get_speed`. |
+| `Sonic/legacy/sonic_physics_legacy.py` | Retirado, no se importa | Sistema viejo (px/s, delta). Referencia para animaciones, look up/down, etc. |
+| `Sonic/perf.py` | En uso, **verificado** (2026-11-13) | `StepProfiler`: total, Python y motor por ventana de N frames. `from godot import OS` funciona. |
 | `Sonic/loop_path.py` | En uso | Loops por Path2D. Escribe `body.velocity` en px/s: incompatible con el módulo nuevo hasta migrarlo. |
 | `Sonic/surface_physics.py` | Sin uso | Intento anterior. Borrar. |
 | `items/springs/*/*.py` (4) | En uso, ignorados por el módulo nuevo | Casi idénticos. Llaman a `external_boost` (px/s); si no existe, escriben `velocity` del jugador. |
@@ -80,16 +80,22 @@ Estado al 2026-11-08. "Verificado" significa probado jugando por Silv.
 
 Formato: fecha · módulo · qué se hizo en la prueba · línea(s) `[perf]`.
 
-- (vacío: falta la baseline del sistema viejo, Fase 0)
+- **2026-11-13 · sistema viejo (baseline, Fase 0)** · Godot 3.6.1 desde el editor (debug), RTX 3050.
+  Prueba libre de unos 30 s (correr, frenar, saltar, anillos); no se registró qué se hizo en cada ventana.
+  Reloj: 0.29 us por par de `get_ticks_usec()`. Ventanas de 120 frames, sin contar la primera (arranque):
+  total 292–590 us (máx 1581) · python 262–553 us · motor 26–55 us · 1.75–3.54 % del frame.
+  Primera ventana: total 376 us, máx 1897 us.
+  Lectura: ~90 % del costo es "python", pero esa etiqueta incluye cada llamada a Godot que no sea
+  `move_and_slide` (is_on_floor, Input, anim_player, Vector2...). Todavía no se separa lógica pura de costo de frontera.
+  Para comparar con el módulo nuevo: repetir una rutina fija (10 s quieto, 10 s corriendo en plano, 10 s frenando y girando).
 
 ## Dudas abiertas
 
-1. **godot-python y los `.py` sueltos:** ¿el editor intenta cargar los `.py` que no usa
-   ninguna escena (`surface_physics.py`, el futuro `legacy/`)? Si lo hace, ¿da errores en
-   consola? Lo tiene que ver Silv en el editor.
-2. **¿Se importan `OS` y `Engine` desde `godot`?** `perf.py` usa `from godot import OS`
-   y el módulo nuevo `from godot import Engine`. Por el patrón de `ResourceLoader`
-   (que ya se importa así en `personaje.py`) debería funcionar, pero es *hipótesis*.
+1. ~~godot-python y los `.py` sueltos~~ (resuelto 2026-11-13: el editor imprime `Cannot load ... because
+   it doesn't expose any class to Godot` al cambiar de pestaña de escena. Le pasaba también al
+   `sonic_physics.py` viejo, que funcionaba, así que se considera ruido inofensivo.)
+2. **¿Se importa `Engine` desde `godot`?** `OS` sí (verificado 2026-11-13). `Engine` lo usa el
+   módulo nuevo; si falla, ahora `personaje.py` imprime el traceback.
 3. **Air drag en la SPG en Markdown:** `docs/11-forces-subtopics/air-state.md` del repo
    trentbrew dice `X Speed -= (floor(X Speed >> 2) / 256)`. Por memoria, el original equivale
    a aproximadamente `xsp/32` por frame. Verificar en la wiki antes de la fase A2.
@@ -154,3 +160,7 @@ Riesgos y cómo hacerlo:
 - 2026-11-08 · Claude · `CLAUDE.md` reescrito con el rumbo nuevo. Se creó `docs/tiles/` (hoja de
   las 70 piezas de suelo con su colisión, tabla con ángulos y nombres propuestos). Hallazgos: 4 escenas
   usan el PNG equivocado y 3 son duplicados; solo 15 de las 70 se usan en el nivel.
+- 2026-11-13 · Claude · Baseline del sistema viejo registrada (Mediciones). Fase A1 activada:
+  `sonic_physics.py` viejo → `Sonic/legacy/sonic_physics_legacy.py`; `sonic_physics_spg.py` → `sonic_physics.py`.
+  `personaje.py` ahora imprime el error si falla el import de la física. Pendiente: que Silv pruebe A1 jugando.
+  Visto en el log: `[LoopPath] reject speed: 0.0 < 220.0` (5 veces); falta saber si Sonic iba rápido.

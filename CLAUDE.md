@@ -51,9 +51,8 @@ ver hasta dónde llega Python en un juego de plataformas rápido.
   (sin sensores todavía).
 - `Sonic/personaje.py`: exports (los viejos están en px/s), vida y muerte, anillos,
   `external_boost`, driver de loops, medición de rendimiento.
-- `Sonic/sonic_physics.py`: sistema **viejo** (px/s, delta). Se retira tras la baseline.
-- `Sonic/sonic_physics_spg.py`: sistema **nuevo**, fase A1. Pasa a llamarse `sonic_physics.py`
-  y el viejo se mueve a `Sonic/legacy/`.
+- `Sonic/sonic_physics.py`: sistema **nuevo** (SPG, px/frame), fase A1 activa desde 2026-11-13.
+- `Sonic/legacy/sonic_physics_legacy.py`: sistema viejo (px/s, delta). No se importa; es referencia.
 - `Sonic/perf.py`: `StepProfiler`. Mide total, Python y motor por cada ventana de N frames.
 - `Sonic/loop_path.py`: loops por Path2D (`attach`/`detach_path_driver`). Todavía en px/s.
 - `Sonic/surface_physics.py`: sin uso.

@@ -47,8 +47,8 @@ Es una conversión automática: si una fórmula se ve rara, se compara con la wi
 
 | Fase | Qué incluye | Estado |
 |---|---|---|
-| **0. Medición base** | Medir cuánto cuesta por frame la física vieja (parte Python y parte motor) | Instalada, falta correrla |
-| **A1. Suelo plano** | Aceleración, desaceleración, fricción y velocidad tope de la SPG | Escrita, sin probar |
+| **0. Medición base** | Medir cuánto cuesta por frame la física vieja (parte Python y parte motor) | Hecha (2026-11-13) |
+| **A1. Suelo plano** | Aceleración, desaceleración, fricción y velocidad tope de la SPG | Activa en `feat/fisica-spg`, probándose |
 | **A2. Salto y aire** | Salto variable, control y resistencia en el aire, gravedad | Por hacer |
 | **A3. Roll y spindash** | Fricción del roll, carga y lanzamiento del spindash | Por hacer |
 | **A4. Pendientes** | La pendiente acelera y frena, aterrizaje según ángulo, resbalar en paredes | Por hacer |

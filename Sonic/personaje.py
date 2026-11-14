@@ -1,10 +1,13 @@
 # res://Sonic/personaje.py
 from godot import exposed, export, KinematicBody2D, Vector2, Input, ResourceLoader
 
-# Módulo externo de físicas (tu sonic_physics.py)
+# Módulo de físicas (SPG). El sistema viejo está en Sonic/legacy/ y ya no se importa.
+# Si el import falla se imprime el error: antes fallaba en silencio y Sonic caía sin control.
 try:
 	from Sonic.sonic_physics import SonicPhysics
 except Exception:
+	import traceback
+	traceback.print_exc()
 	SonicPhysics = None
 
 # Medición de rendimiento de step() (ver Sonic/perf.py)

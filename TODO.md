@@ -6,14 +6,12 @@ o con resultado parcial · `[~]` obsoleto por la migración.
 ## Fases de la migración a la SPG
 
 ### Fase 0 — Medición base
-- [-] Medir `SonicPhysics.step()` con el sistema viejo (`Sonic/perf.py`, ya instalado).
-      Correr, frenar y saltar unos 20–30 s y guardar las líneas `[perf]` en `.ai/SYNC.md`.
+- [x] Medir `SonicPhysics.step()` con el sistema viejo (2026-11-13; resultados en `.ai/SYNC.md`).
 
 ### Fase A — Modelo de velocidad SPG (se mantiene KinematicBody2D)
 - [ ] A1. Suelo plano: aceleración, desaceleración (con el quirk de 0.5), fricción y tope (versión S2+).
-      - [-] Módulo escrito: `Sonic/sonic_physics_spg.py`. Falta que Silv lo revise.
-      - [ ] Tras la baseline: mover el viejo a `Sonic/legacy/sonic_physics_legacy.py` y
-            renombrar el nuevo a `Sonic/sonic_physics.py`.
+      - [-] Módulo escrito y activado (2026-11-13): `Sonic/sonic_physics.py`. El viejo está en
+            `Sonic/legacy/sonic_physics_legacy.py`. Falta que Silv lo revise.
       - [ ] Probar jugando. Medir con `[perf]` y comparar con la baseline.
       - [ ] Ver si la regla de pared nueva resuelve "pared de frente en suelo caminable no frena".
 - [ ] A2. Salto y aire: fuerza de salto, salto variable, aceleración aérea, air drag, gravedad
