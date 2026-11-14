@@ -7,3 +7,7 @@ __pycache__/
 
 # Respaldos locales
 _backup_*/
+
+# Archivos de trabajo con agentes de IA (instrucciones, notas, coordinación): solo locales
+CLAUDE.md
+.ai/

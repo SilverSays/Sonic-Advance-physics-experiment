@@ -6,7 +6,7 @@ o con resultado parcial · `[~]` obsoleto por la migración.
 ## Fases de la migración a la SPG
 
 ### Fase 0 — Medición base
-- [x] Medir `SonicPhysics.step()` con el sistema viejo (2026-11-13; resultados en `.ai/SYNC.md`).
+- [x] Medir `SonicPhysics.step()` con el sistema viejo (2026-11-13; resultados en `docs/fases/00-baseline.md`).
 
 ### Fase A — Modelo de velocidad SPG (se mantiene KinematicBody2D)
 - [ ] A1. Suelo plano: aceleración, desaceleración (con el quirk de 0.5), fricción y tope (versión S2+).
@@ -57,7 +57,7 @@ o con resultado parcial · `[~]` obsoleto por la migración.
       viejos están en px/s y ya no los usa el módulo nuevo.
 
 ## Organización del proyecto (propuesta, sin aplicar)
-- [ ] Decidir la estructura nueva. Propuesta en `.ai/SYNC.md`, sección "Propuesta de reorganización".
+- [ ] Decidir la estructura nueva. Propuesta en `docs/reorganizacion.md`.
 - [ ] Mover desde el FileSystem del editor de Godot (actualiza las referencias en `.tscn`),
       no desde el explorador de Windows.
 - [ ] Después de mover, corregir a mano lo que Godot no actualiza: imports de Python

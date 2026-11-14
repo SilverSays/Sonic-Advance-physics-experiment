@@ -11,7 +11,8 @@ añaden enemigos, objetos interactivos y coleccionables.
 >
 > - `main` tiene el sistema de físicas **viejo**, jugable pero con errores conocidos.
 > - El trabajo nuevo está en la rama **`feat/fisica-spg`**. Ahí también están el plan
->   detallado (`TODO.md`), la documentación (`docs/`) y las notas de trabajo (`.ai/SYNC.md`).
+>   detallado (`TODO.md`), la documentación (`docs/`) y la bitácora de cada fase
+>   (`docs/fases/`).
 > - Se fusiona a `main` cada vez que una fase funciona jugando.
 
 ## Rumbo del proyecto
@@ -43,13 +44,26 @@ Es una conversión automática: si una fórmula se ve rara, se compara con la wi
   muchas llamadas a Godot desde Python cada frame. Eso es justo lo que se quiere medir
   y optimizar, y por eso se mide desde el primer día.
 
+## Uso de IA
+
+Este proyecto se desarrolla con apoyo de una IA (Claude, de Anthropic) como
+**acompañamiento de aprendizaje**. No es un proyecto "vibecodeado":
+
+- Silv decide el rumbo, las fases y qué se cambia.
+- La IA explica la Sonic Physics Guide, audita el código, señala problemas y su causa,
+  y escribe partes del código cuando Silv se lo pide.
+- Todo cambio lo revisa Silv y se prueba jugando antes de darlo por bueno. Lo que todavía
+  no se ha probado se marca como hipótesis.
+- Cada fase queda documentada (qué se hizo, por qué y cómo se verificó) en `docs/fases/`
+  de la rama `feat/fisica-spg`.
+
 ## Roadmap
 
 | Fase | Qué incluye | Estado |
 |---|---|---|
-| **0. Medición base** | Medir cuánto cuesta por frame la física vieja (parte Python y parte motor) | Hecha (2026-11-13) |
-| **A1. Suelo plano** | Aceleración, desaceleración, fricción y velocidad tope de la SPG | Activa en `feat/fisica-spg`, probándose |
-| **A2. Salto y aire** | Salto variable, control y resistencia en el aire, gravedad | Por hacer |
+| **0. Medición base** | Medir cuánto cuesta por frame la física vieja (parte Python y parte motor) | Hecha |
+| **A1. Suelo plano** | Aceleración, desaceleración, fricción y velocidad tope de la SPG | Hecha, verificada jugando |
+| **A2. Salto y aire** | Salto variable, control y resistencia en el aire, gravedad | Hecha, verificada jugando |
 | **A3. Roll y spindash** | Fricción del roll, carga y lanzamiento del spindash | Por hacer |
 | **A4. Pendientes** | La pendiente acelera y frena, aterrizaje según ángulo, resbalar en paredes | Por hacer |
 | **A5. Hacia Advance** | Ajustes uno por uno para la sensación de Sonic Advance | Por hacer |
@@ -93,8 +107,8 @@ rama nueva, las líneas `[perf]` de la consola muestran el costo por frame de la
 - **Flecha abajo:** agacharse, rodar o preparar el spindash.
 - **Espacio:** saltar o cargar el spindash.
 
-En la rama `feat/fisica-spg`, durante la fase A1, solo funciona el movimiento horizontal.
-Lo demás está desactivado a propósito hasta su fase.
+En la rama `feat/fisica-spg` por ahora solo funcionan correr y saltar. Lo demás está
+desactivado a propósito hasta su fase.
 
 ## Estructura principal
 
