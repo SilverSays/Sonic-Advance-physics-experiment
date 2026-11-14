@@ -16,7 +16,7 @@
 #
 # FUERA DE ALCANCE TODAVÍA: roll, spindash, pendientes (slope factor), daño,
 # look up/down, crouch y casi todas las animaciones.
-# Ver docs/animaciones-legacy.md.
+# Ver docs/legacy-animations.md.
 
 import math
 from godot import Vector2, Input, Engine
@@ -40,7 +40,7 @@ GRV = 56 / SUBPX       # 0.21875  gravedad, se aplica DESPUÉS de mover
 AIR_DRAG_YMIN = -4.0   # el air drag solo actúa con -4 < ysp < 0 (cerca del ápice del salto)
 MAX_FALL = 16.0        # PROVISIONAL: la guía solo lista un tope de caída para Sonic CD
 JUMP_DELAY = True      # fiel a Genesis: el frame en que salta, Sonic no se mueve
-                       # (Sonic Mania lo quitó; candidato a ajuste en la fase A5)
+					   # (Sonic Mania lo quitó; candidato a ajuste en la fase A5)
 
 # ---------------- Ajustes de Godot (no vienen de la guía) ----------------
 FLOOR_MAX_ANGLE = math.radians(65.0)  # mismo valor que usaba el sistema viejo
