@@ -64,7 +64,7 @@ Estado al 2026-11-13. "Verificado" significa probado jugando por Silv.
 | Script | Estado | Notas |
 |---|---|---|
 | `Sonic/personaje.py` | En uso | Parámetros (exports viejos en px/s), vida y muerte, anillos, boost, driver de loops. Mide `step()` con `perf.py` (exports `perf_enabled`, `perf_window`). Desde 2026-11-13 imprime el error si falla el import de la física (antes fallaba en silencio). Varios métodos escriben `velocity` directamente (ver regla de unidades en README). |
-| `Sonic/sonic_physics.py` | **Activo desde 2026-11-13, sin probar jugando** | Fase A1 de la SPG (suelo plano, px/frame). Antes se llamaba `sonic_physics_spg.py`. API: `set_ground_speed`, `set_air_speed`, `get_speed`. |
+| `Sonic/sonic_physics.py` | **Activo.** A1 probada jugando; A2 escrita, sin probar | Fases A1 (suelo plano) y A2 (salto y aire) de la SPG, px/frame. Antes se llamaba `sonic_physics_spg.py`. API: `set_ground_speed`, `set_air_speed`, `get_speed`. |
 | `Sonic/legacy/sonic_physics_legacy.py` | Retirado, no se importa | Sistema viejo (px/s, delta). Referencia para animaciones, look up/down, etc. |
 | `Sonic/perf.py` | En uso, **verificado** (2026-11-13) | `StepProfiler`: total, Python y motor por ventana de N frames. `from godot import OS` funciona. |
 | `Sonic/loop_path.py` | En uso | Loops por Path2D. Escribe `body.velocity` en px/s: incompatible con el módulo nuevo hasta migrarlo. |
@@ -101,8 +101,7 @@ Formato: fecha · módulo · qué se hizo en la prueba · línea(s) `[perf]`.
 1. ~~godot-python y los `.py` sueltos~~ (resuelto 2026-11-13: el editor imprime `Cannot load ... because
    it doesn't expose any class to Godot` al cambiar de pestaña de escena. Le pasaba también al
    `sonic_physics.py` viejo, que funcionaba, así que se considera ruido inofensivo.)
-2. **¿Se importa `Engine` desde `godot`?** `OS` sí (verificado 2026-11-13). `Engine` lo usa el
-   módulo nuevo; si falla, ahora `personaje.py` imprime el traceback.
+2. ~~¿Se importa `Engine` desde `godot`?~~ (resuelto 2026-11-13: sí; A1 arrancó sin traceback ni aviso.)
 3. **Air drag en la SPG en Markdown:** `docs/11-forces-subtopics/air-state.md` del repo
    trentbrew dice `X Speed -= (floor(X Speed >> 2) / 256)`. Por memoria, el original equivale
    a aproximadamente `xsp/32` por frame. Verificar en la wiki antes de la fase A2.
@@ -178,3 +177,10 @@ Riesgos y cómo hacerlo:
   de Godot; el nodo que encuentra LoopPath no lo expone, así que `body.velocity` lanza una excepción, el
   `except` la traga y pone `sp = 0.0`. Explicaría por qué los loops nunca enganchan. Se repite muchas veces
   porque `_process` sondea cada frame dentro de `poll_radius`. Ver TODO.md.
+- 2026-11-13 · Claude · Opinión de Silv sobre A1: "muy lento comparado con el anterior"; la aceleración se
+  siente bien y acorde al tope; el frenado gira muy brusco (se deja para A5, es el valor de Genesis).
+  Prueba de cámara: resolución interna 240x160 como la GBA (commit aparte, revertible). Escrita A2: salto
+  a lo largo de la normal (6.5), salto variable (tope -4 al soltar), aire con AIR_ACC 0.09375 y tope S2+,
+  air drag (`floor(xsp*8)/256` con -4 < ysp < 0, hipótesis), gravedad después de mover, jump delay de 1 frame.
+  Cuentas (sin verificar): salto completo ~100 px y 61 frames; soltando enseguida ~39 px y 38 frames.
+  Ojo: con 160 px de alto, un salto de 100 px ocupa ~62 % de la pantalla (en Genesis, con 224, ~45 %).
